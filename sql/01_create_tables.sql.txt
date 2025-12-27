@@ -1,0 +1,36 @@
+-- =====================================================
+-- Table: fact_trips
+-- Description: Stores trip-level operational data
+-- One row = one trip
+-- =====================================================
+
+CREATE TABLE fact_trips (
+    trip_id             INTEGER PRIMARY KEY,
+    customer_id         INTEGER NOT NULL,
+    driver_id           INTEGER NOT NULL,
+
+    trip_created_at     TIMESTAMP NOT NULL,
+    pickup_time         TIMESTAMP,
+    dropoff_time        TIMESTAMP,
+
+    pickup_city_id      INTEGER NOT NULL,
+    dropoff_city_id     INTEGER NOT NULL,
+
+    distance_km         FLOAT,
+    duration_min        INTEGER,
+
+    price_total         FLOAT NOT NULL,
+
+    status              VARCHAR(50) NOT NULL
+);
+
+-- =====================================================
+-- Notes:
+-- - pickup_time and dropoff_time can be NULL for cancelled or no_show trips
+-- - price_total = 0 for non-completed trips
+-- - status values observed:
+--   'completed'
+--   'cancelled_by_customer'
+--   'cancelled_by_driver'
+--   'no_show'
+-- =====================================================
