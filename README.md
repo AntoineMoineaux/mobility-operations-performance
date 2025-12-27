@@ -63,6 +63,29 @@ The Power BI dashboard is structured into three pages:
 
 ---
 
+## 📊 Dashboard Screenshots
+
+### Executive Overview
+High-level view of revenue, trip volume, and cancellation trends, designed for executive decision-making.
+
+![Executive Overview](powerbi/screenshots/executive_overview.png)
+
+---
+
+### Operational Performance
+City-level analysis of volume, efficiency, and cancellation risk to identify operational pressure points.
+
+![Operational Performance](powerbi/screenshots/operational_performance.png)
+
+---
+
+### Strategic Recommendations
+Action-oriented view translating performance metrics into operational status and priority levels (P0 / P1 / P2).
+
+![Strategic Recommendations](powerbi/screenshots/strategic_recommendations.png)
+
+---
+
 ## 🔍 Key Insights
 - Revenue growth is primarily driven by increased trip volume
 - High-revenue cities can also present elevated cancellation risk
