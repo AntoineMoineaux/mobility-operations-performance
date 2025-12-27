@@ -1,0 +1,94 @@
+-- =====================================================
+-- 03_transformations.sql
+-- Purpose: build enriched views and KPI-ready aggregates
+-- =====================================================
+
+-- -----------------------------------------------------
+-- View 1: Trip-level enrichment
+-- - adds flags and time buckets used in reporting
+-- -----------------------------------------------------
+CREATE VIEW vw_trips_enriched AS
+SELECT
+    trip_id,
+    customer_id,
+    driver_id,
+
+    trip_created_at,
+    pickup_time,
+    dropoff_time,
+
+    pickup_city_id,
+    dropoff_city_id,
+
+    distance_km,
+    duration_min,
+    price_total,
+    status,
+
+    -- Flags
+    CASE WHEN status = 'completed' THEN 1 ELSE 0 END AS is_completed,
+    CASE WHEN status IN ('cancelled_by_customer', 'cancelled_by_driver', 'no_show') THEN 1 ELSE 0 END AS is_cancelled,
+
+    -- Cancellation type
+    CASE
+        WHEN status = 'cancelled_by_customer' THEN 'customer'
+        WHEN status = 'cancelled_by_driver'   THEN 'driver'
+        WHEN status = 'no_show'               THEN 'no_show'
+        ELSE NULL
+    END AS cancellation_type,
+
+    -- Time buckets for reporting (month)
+    DATE(trip_created_at) AS trip_date,
+    CAST(strftime('%Y', trip_created_at) AS INTEGER) AS trip_year,
+    CAST(strftime('%m', trip_created_at) AS INTEGER) AS trip_month
+
+FROM fact_trips;
+
+
+-- -----------------------------------------------------
+-- View 2: City x Month KPIs
+-- - this is your "dataset" for many charts
+-- -----------------------------------------------------
+CREATE VIEW vw_city_month_kpis AS
+SELECT
+    pickup_city_id,
+    trip_year,
+    trip_month,
+
+    COUNT(*) AS total_trips,
+    SUM(is_completed) AS completed_trips,
+    SUM(is_cancelled) AS cancelled_trips,
+
+    -- Revenue only on completed trips (already enforced in cleaning)
+    ROUND(SUM(price_total), 2) AS revenue,
+
+    -- Cancellation rate
+    ROUND(
+        (SUM(is_cancelled) * 1.0) / NULLIF(COUNT(*), 0),
+        4
+    ) AS cancellation_rate,
+
+    -- Revenue per trip
+    ROUND(
+        SUM(price_total) * 1.0 / NULLIF(COUNT(*), 0),
+        2
+    ) AS revenue_per_trip
+
+FROM vw_trips_enriched
+GROUP BY pickup_city_id, trip_year, trip_month;
+
+
+-- -----------------------------------------------------
+-- View 3: City KPIs (overall)
+-- -----------------------------------------------------
+CREATE VIEW vw_city_kpis AS
+SELECT
+    pickup_city_id,
+    COUNT(*) AS total_trips,
+    SUM(is_completed) AS completed_trips,
+    SUM(is_cancelled) AS cancelled_trips,
+    ROUND(SUM(price_total), 2) AS revenue,
+    ROUND((SUM(is_cancelled) * 1.0) / NULLIF(COUNT(*), 0), 4) AS cancellation_rate,
+    ROUND(SUM(price_total) * 1.0 / NULLIF(COUNT(*), 0), 2) AS revenue_per_trip
+FROM vw_trips_enriched
+GROUP BY pickup_city_id;
