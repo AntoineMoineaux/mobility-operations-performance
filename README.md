@@ -84,6 +84,7 @@ Action-oriented view translating performance metrics into operational status and
 
 ![Strategic Recommendations](powerbi/screenshots/strategic_recommendations.png)
 
+
 ---
 
 ## 🔍 Key Insights
