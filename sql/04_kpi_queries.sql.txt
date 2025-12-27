@@ -1,0 +1,88 @@
+-- =====================================================
+-- 04_kpi_queries.sql
+-- Purpose: business-ready KPI queries for analysis
+-- =====================================================
+
+-- -----------------------------------------------------
+-- 1) Overall KPIs
+-- -----------------------------------------------------
+SELECT
+    COUNT(*)                         AS total_trips,
+    SUM(is_completed)                AS completed_trips,
+    SUM(is_cancelled)                AS cancelled_trips,
+    ROUND(SUM(price_total), 2)       AS total_revenue,
+    ROUND(
+        SUM(is_cancelled) * 1.0 / NULLIF(COUNT(*), 0),
+        4
+    ) AS cancellation_rate
+FROM vw_trips_enriched;
+
+
+-- -----------------------------------------------------
+-- 2) KPIs by city (ranking)
+-- -----------------------------------------------------
+SELECT
+    pickup_city_id,
+    COUNT(*)                   AS total_trips,
+    ROUND(SUM(price_total), 2) AS revenue,
+    ROUND(
+        SUM(is_cancelled) * 1.0 / NULLIF(COUNT(*), 0),
+        4
+    ) AS cancellation_rate
+FROM vw_trips_enriched
+GROUP BY pickup_city_id
+ORDER BY revenue DESC;
+
+
+-- -----------------------------------------------------
+-- 3) Cancellation breakdown by type
+-- -----------------------------------------------------
+SELECT
+    cancellation_type,
+    COUNT(*) AS cancelled_trips
+FROM vw_trips_enriched
+WHERE is_cancelled = 1
+GROUP BY cancellation_type
+ORDER BY cancelled_trips DESC;
+
+
+-- -----------------------------------------------------
+-- 4) Monthly revenue & cancellation rate (trend)
+-- -----------------------------------------------------
+SELECT
+    trip_year,
+    trip_month,
+    COUNT(*) AS total_trips,
+    ROUND(SUM(price_total), 2) AS revenue,
+    ROUND(
+        SUM(is_cancelled) * 1.0 / NULLIF(COUNT(*), 0),
+        4
+    ) AS cancellation_rate
+FROM vw_trips_enriched
+GROUP BY trip_year, trip_month
+ORDER BY trip_year, trip_month;
+
+
+-- -----------------------------------------------------
+-- 5) Operational status by city (logic used in dashboard)
+-- -----------------------------------------------------
+SELECT
+    pickup_city_id,
+    ROUND(SUM(price_total), 2) AS revenue,
+    ROUND(
+        SUM(is_cancelled) * 1.0 / NULLIF(COUNT(*), 0),
+        4
+    ) AS cancellation_rate,
+    CASE
+        WHEN SUM(price_total) >= 100000
+             AND (SUM(is_cancelled) * 1.0 / COUNT(*)) >= 0.09
+            THEN 'High value / Monitor risk'
+        WHEN SUM(price_total) >= 100000
+            THEN 'High value / Stable'
+        WHEN (SUM(is_cancelled) * 1.0 / COUNT(*)) >= 0.09
+            THEN 'Risky / Needs action'
+        ELSE 'Stable'
+    END AS operational_status
+FROM vw_trips_enriched
+GROUP BY pickup_city_id
+ORDER BY revenue DESC;
