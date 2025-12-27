@@ -88,3 +88,30 @@ The Power BI dashboard is structured into three pages:
 - Add predictive indicators for cancellation risk
 - Integrate city metadata (population, supply size)
 - Automate data refresh and alerting
+  
+---
+
+## ⚠️ Limitations & Trade-offs
+
+This project was intentionally designed to balance analytical depth, clarity, and portfolio relevance. The following limitations and trade-offs were consciously made:
+
+### Data Scope
+- The dataset is synthetic and does not include real user behavior or financial constraints.
+- No customer-level lifecycle analysis (retention, churn, LTV) is possible with the available data.
+- City metadata (population, driver supply size) is not included, limiting deeper contextual analysis.
+
+### Modeling Choices
+- A single fact table (`fact_trips`) was used to keep the model simple and readable.
+- City and driver dimensions were not normalized into separate tables to avoid unnecessary complexity for a portfolio project.
+- Business rules (e.g. revenue only for completed trips) were enforced explicitly for KPI consistency.
+
+### Analytical Trade-offs
+- Cancellation analysis focuses on operational risk rather than behavioral causality.
+- Thresholds used for operational status and prioritization are illustrative and would normally be refined with domain experts.
+- No predictive modeling was implemented; the analysis remains descriptive and diagnostic.
+
+### Visualization Scope
+- The dashboard prioritizes decision-making and actionability over exhaustive metric coverage.
+- Some KPIs could be further segmented (time of day, driver tenure, distance buckets) to deepen insights.
+
+These trade-offs were made deliberately to ensure the project remains clear, actionable, and aligned with real-world data analyst responsibilities.
