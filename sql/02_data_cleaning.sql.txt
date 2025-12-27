@@ -1,0 +1,37 @@
+-- =====================================================
+-- 02_data_cleaning.sql
+-- Purpose: standardize raw data + enforce business rules
+-- =====================================================
+
+-- 1) Standardize status values (lowercase + trim)
+UPDATE fact_trips
+SET status = LOWER(TRIM(status));
+
+-- 2) Keep only allowed status values (portfolio-safe)
+-- If unexpected values appear, classify them as 'other'
+UPDATE fact_trips
+SET status = 'other'
+WHERE status NOT IN (
+  'completed',
+  'cancelled_by_customer',
+  'cancelled_by_driver',
+  'no_show'
+);
+
+-- 3) Revenue rule: revenue is generated only for completed trips
+UPDATE fact_trips
+SET price_total = 0
+WHERE status <> 'completed';
+
+-- 4) Clean numeric anomalies (optional, but very pro)
+UPDATE fact_trips
+SET distance_km = NULL
+WHERE distance_km IS NOT NULL AND distance_km < 0;
+
+UPDATE fact_trips
+SET duration_min = NULL
+WHERE duration_min IS NOT NULL AND duration_min < 0;
+
+-- 5) Optional: if pickup/dropoff times are missing for completed trips, flag them
+-- (We don't delete rows, we keep them for transparency.)
+-- You can later quantify these in data quality checks.
