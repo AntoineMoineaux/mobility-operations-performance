@@ -18,7 +18,6 @@ This project helps decision-makers identify where to focus attention and which a
 ## ❓ Key Business Questions
 - Which cities drive the majority of revenue and trip volume?
 - Where is cancellation risk increasing?
-- What are the main causes of cancellations?
 - Which cities require immediate action versus monitoring?
 
 ---
